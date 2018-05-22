@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>TodosList-simple</title>
+  <link rel="stylesheet" href="css/all.css">
 </head>
 <body>
-  
+  <div id="app">
+    <input type="text" placeholder="請輸入代辦事項" v-model="newTodo"
+      @keyup.enter="addTodo(newTodo)">
+    <input type="button" value="送出" @click="addTodo(newTodo)">
+    {{ todos }}
+  </div>
+  <script src="https://unpkg.com/vue@2.5.16/dist/vue.js"></script>
+	<script src="js/all.js"></script>
 </body>
 </html>
