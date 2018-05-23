@@ -9,9 +9,8 @@
 </head>
 <body>
   <div id="app">
-    <input type="text" placeholder="請輸入代辦事項" v-model="newTodo"
-      @keyup.enter="addTodo(newTodo)">
-    <input type="button" value="送出" @click="addTodo(newTodo)">
+    <new-input :new-add="newTodo"></new-input>
+    <todo-list v-for="(todo, index) in todos" :key="index" :new="todo"></todo-list>
     {{ todos }}
   </div>
   <script src="https://unpkg.com/vue@2.5.16/dist/vue.js"></script>
