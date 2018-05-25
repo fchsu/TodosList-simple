@@ -12,17 +12,14 @@
   <div id="app">
     <h1>To Do List</h1>
     <ul class="title">
-      <li>{{ todoTitle }}</li>
-      <li>{{ doneTitle }}</li>
+      <li @click="currentView = 'wantTodo'"
+          :class="wantBorderOnOff">{{ todoTitle }}</li>
+      <li @click="currentView = 'doneTodo'"
+          :class="doneBorderOnOff">{{ doneTitle }}</li>
     </ul>
-    <want-todo></want-todo>
-
-
-<!--     <div class="todolist">
-      <new-input :new-add="newTodo"></new-input>
-      <todo-list :todolists="todos"></todo-list>
-    </div> -->
-    <!-- {{ todos }} -->
+    <keep-alive>
+      <component :is="currentView"></component>
+    </keep-alive>
   </div>
   <script src="https://unpkg.com/vue@2.5.16/dist/vue.js"></script>
 	<script src="js/all.js"></script>

@@ -86,8 +86,10 @@ h1{
 	font-weight: bold;
 	cursor: pointer;
 }
-.title-border{
-	border: 1px solid #ced4da;
+.titleBorder{
+	border-top: 1px solid #ced4da;
+	border-right: 1px solid #ced4da;
+	border-left: 1px solid #ced4da;
 }
 .todolist{
 	padding: 10px 10px;
