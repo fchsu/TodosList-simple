@@ -40,25 +40,34 @@ let newInput = Vue.extend({
 
 let doneCancel = Vue.extend({
   template:
-    `<input type="button" :value="state" @click="done()"></input>`,
+    `<input type="button" :value="state" @click="done(index)"></input>`,
   props: {
     doneThing: null,
-    stateValue: null
+    stateValue: null,
+    num: null
   },
   data(){
     return {
-    doneThing: null,
       todoState: this.doneThing,
-      state: this.stateValue
+      state: this.stateValue,
+      index: this.num
     }
   },
   methods: {
-    done(){
+    done(index){
       if (this.state == '完成'){
-        this.$bus.$emit('updateState', true);
+        const object = {
+          Boolean: true,
+          number: index
+        }
+        this.$bus.$emit('updateState', object);
         this.state = '取消';
       }else{
-        this.$bus.$emit('updateState', false);
+        const object = {
+          Boolean: false,
+          number: index
+        }
+        this.$bus.$emit('updateState', object);
         this.state = '完成';
       }
     }
@@ -68,10 +77,10 @@ let doneCancel = Vue.extend({
 let todoList = Vue.extend({
   template: 
     `<ul class="list-group list-group-flush">
-      <li class="list-group-item" v-for="item in thingTodos">
+      <li class="list-group-item" v-for="(item, index) in thingTodos">
         <span :class="{ checkbox: item.complete }">{{ item.content }}</span>
         <done-cancel :doneThing="item.complete"
-            :stateValue="todoState"></done-cancel>
+          :stateValue="todoState" :num="index"></done-cancel>
         <input type="button" value="刪除" @click="removeThing(item)">
       </li>
     </ul>`,
@@ -80,9 +89,6 @@ let todoList = Vue.extend({
   },
   components: {
     doneCancel
-  },
-  mounted: function(){
-    this.$bus.$on('updateState', updateData);
   },
   data(){
     return {
@@ -93,9 +99,6 @@ let todoList = Vue.extend({
   methods:{
     removeThing(object){
       this.$bus.$emit('updatedRemove', object);
-    },
-    updateData(Boolean){
-      this;
     }
   }
 });
@@ -113,6 +116,7 @@ let wantTodo = Vue.extend({
   mounted: function(){
     this.$bus.$on('updatedAdd', this.addTodo);
     this.$bus.$on('updatedRemove', this.removeTodo);
+    this.$bus.$on('updateState', this.updateData);
   },
   data(){
     return{
@@ -126,6 +130,10 @@ let wantTodo = Vue.extend({
     },
     removeTodo(object){
       this.todos.splice(this.todos.indexOf(object), 1);
+    },
+    updateData(object){
+      this.todos[object.number].complete = object.Boolean;
+      this.$bus.$emit('doneState', this.todos);
     }
   }
 });
@@ -138,11 +146,19 @@ let doneTodo = Vue.extend({
   components: {
     todoList
   },
+  mounted: function(){
+    this.$bus.$on('doneState', this.doneState);
+  },
   data(){
     return{
       todos: [],
     }
   },
+  methods: {
+    doneState(array){
+      this.todos = array;
+    }
+  }
 });
 
 let app = new Vue({
