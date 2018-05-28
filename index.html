@@ -17,9 +17,8 @@
       <li @click="currentView = 'doneTodo'"
           :class="doneBorderOnOff">{{ doneTitle }}</li>
     </ul>
-    <keep-alive>
-      <component :is="currentView"></component>
-    </keep-alive>
+      <want-todo v-show="currentView == 'wantTodo'"></want-todo>
+      <done-todo v-show="currentView == 'doneTodo'"></done-todo>
   </div>
   <script src="https://unpkg.com/vue@2.5.16/dist/vue.js"></script>
 	<script src="js/all.js"></script>

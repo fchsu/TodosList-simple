@@ -3,7 +3,7 @@ let EventBus = new Vue();
 Object.defineProperties(Vue.prototype, {
   $bus: {
     get: function () {
-      return EventBus
+      return EventBus;
     }
   }
 })
@@ -38,67 +38,41 @@ let newInput = Vue.extend({
   }
 });
 
-let doneCancel = Vue.extend({
-  template:
-    `<input type="button" :value="state" @click="done(index)"></input>`,
-  props: {
-    doneThing: null,
-    stateValue: null,
-    num: null
-  },
-  data(){
-    return {
-      todoState: this.doneThing,
-      state: this.stateValue,
-      index: this.num
-    }
-  },
-  methods: {
-    done(index){
-      if (this.state == '完成'){
-        const object = {
-          Boolean: true,
-          number: index
-        }
-        this.$bus.$emit('updateState', object);
-        this.state = '取消';
-      }else{
-        const object = {
-          Boolean: false,
-          number: index
-        }
-        this.$bus.$emit('updateState', object);
-        this.state = '完成';
-      }
-    }
-  }
-});
-
 let todoList = Vue.extend({
   template: 
     `<ul class="list-group list-group-flush">
       <li class="list-group-item" v-for="(item, index) in thingTodos">
-        <span :class="{ checkbox: item.complete }">{{ item.content }}</span>
-        <done-cancel :doneThing="item.complete"
-          :stateValue="todoState" :num="index"></done-cancel>
-        <input type="button" value="刪除" @click="removeThing(item)">
+        <input type="checkbox" v-model="item.complete" @click="done(item,index)"></input>
+        <span :class="{ checkbox: item.complete }">{{ item.content }}</span>     
+        <input type="button" value="刪除" @click="removeThing(item, index)">
       </li>
     </ul>`,
   props: {
-    todolists: null
-  },
-  components: {
-    doneCancel
+    todolists: null,
   },
   data(){
     return {
       thingTodos: this.todolists,
-      todoState: '完成'
     }
   },
   methods:{
-    removeThing(object){
-      this.$bus.$emit('updatedRemove', object);
+    removeThing(object, index){
+      if (object.complete == false){
+        this.$bus.$emit('updatedRemove', index);
+      }else {
+        this.$bus.$emit('doneStateRemove', index);
+      }
+    },
+    done(object, index){
+      if (object.complete == false){
+        this.thingTodos.splice(index, 1);
+        this.$bus.$emit('doneState', object);
+        localStorage.setItem('todoList', JSON.stringify(this.thingTodos));
+      }else {
+        this.thingTodos.splice(index, 1);
+        this.$bus.$emit('undoneState', object);
+        localStorage.setItem('doneList', JSON.stringify(this.thingTodos));
+      }
     }
   }
 });
@@ -116,24 +90,25 @@ let wantTodo = Vue.extend({
   mounted: function(){
     this.$bus.$on('updatedAdd', this.addTodo);
     this.$bus.$on('updatedRemove', this.removeTodo);
-    this.$bus.$on('updateState', this.updateData);
+    this.$bus.$on('undoneState', this.undoneState);
   },
   data(){
     return{
-      todos: [],
+      todos: JSON.parse(localStorage.getItem('todoList')) || [],
       newTodo: ''
     }
   },
   methods: {
     addTodo(thing){
       this.todos.push(thing);
+      localStorage.setItem('todoList', JSON.stringify(this.todos));
     },
-    removeTodo(object){
-      this.todos.splice(this.todos.indexOf(object), 1);
+    removeTodo(index){
+      this.todos.splice(index, 1);
+      localStorage.setItem('todoList', JSON.stringify(this.todos));
     },
-    updateData(object){
-      this.todos[object.number].complete = object.Boolean;
-      this.$bus.$emit('doneState', this.todos);
+    undoneState(object){
+      this.todos.push(object);
     }
   }
 });
@@ -146,17 +121,22 @@ let doneTodo = Vue.extend({
   components: {
     todoList
   },
-  mounted: function(){
+  created(){
     this.$bus.$on('doneState', this.doneState);
+    this.$bus.$on('doneStateRemove', this.doneStateRemove);
   },
   data(){
     return{
-      todos: [],
+      todos: JSON.parse(localStorage.getItem('doneList')) || []
     }
   },
   methods: {
-    doneState(array){
-      this.todos = array;
+    doneState(object){
+      this.todos.push(object);
+    },
+    doneStateRemove(index){
+      this.todos.splice(index, 1);
+      localStorage.setItem('doneList', JSON.stringify(this.todos));
     }
   }
 });
