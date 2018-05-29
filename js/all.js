@@ -58,18 +58,22 @@ let todoList = Vue.extend({
   methods:{
     removeThing(object, index){
       if (object.complete == false){
-        this.$bus.$emit('updatedRemove', index);
+        this.thingTodos.splice(index, 1);
+        localStorage.setItem('todoList', JSON.stringify(this.thingTodos));
       }else {
-        this.$bus.$emit('doneStateRemove', index);
+        this.thingTodos.splice(index, 1);
+        localStorage.setItem('doneList', JSON.stringify(this.thingTodos));
       }
     },
     done(object, index){
       if (object.complete == false){
         this.thingTodos.splice(index, 1);
+        object.complete = true;
         this.$bus.$emit('doneState', object);
         localStorage.setItem('todoList', JSON.stringify(this.thingTodos));
       }else {
         this.thingTodos.splice(index, 1);
+        object.complete = false;
         this.$bus.$emit('undoneState', object);
         localStorage.setItem('doneList', JSON.stringify(this.thingTodos));
       }
@@ -89,7 +93,6 @@ let wantTodo = Vue.extend({
   },
   mounted: function(){
     this.$bus.$on('updatedAdd', this.addTodo);
-    this.$bus.$on('updatedRemove', this.removeTodo);
     this.$bus.$on('undoneState', this.undoneState);
   },
   data(){
@@ -103,12 +106,9 @@ let wantTodo = Vue.extend({
       this.todos.push(thing);
       localStorage.setItem('todoList', JSON.stringify(this.todos));
     },
-    removeTodo(index){
-      this.todos.splice(index, 1);
-      localStorage.setItem('todoList', JSON.stringify(this.todos));
-    },
     undoneState(object){
       this.todos.push(object);
+      localStorage.setItem('todoList', JSON.stringify(this.todos));
     }
   }
 });
@@ -123,7 +123,6 @@ let doneTodo = Vue.extend({
   },
   created(){
     this.$bus.$on('doneState', this.doneState);
-    this.$bus.$on('doneStateRemove', this.doneStateRemove);
   },
   data(){
     return{
@@ -133,9 +132,6 @@ let doneTodo = Vue.extend({
   methods: {
     doneState(object){
       this.todos.push(object);
-    },
-    doneStateRemove(index){
-      this.todos.splice(index, 1);
       localStorage.setItem('doneList', JSON.stringify(this.todos));
     }
   }
@@ -146,7 +142,8 @@ let app = new Vue({
   data: {
     todoTitle: '代辦事項',
     doneTitle: '已完成',
-    currentView: 'wantTodo'
+    currentView: 'wantTodo',
+    date: new Date()
   },
   components: {
     wantTodo,
