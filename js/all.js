@@ -24,13 +24,22 @@ let newInput = Vue.extend({
   data(){
     return {
       newInputTodo: this.newAdd,
+      date: ''
     }
   },
   methods: {
     addThing(content){
+      const date = new Date();
       const thing = {
         content: content,
-        complete: false
+        complete: false,
+        dateTime: {
+          Year: date.getFullYear(),
+          Month: date.getMonth() + 1,
+          Date: date.getDate(),
+          Hour: (date.getHours() < 10 ? '0' : '') + date.getHours(),
+          Minute: (date.getMinutes() < 10 ? '0' : '') + date.getMinutes()
+        }
       }
       this.$bus.$emit('updatedAdd', thing);
       this.newInputTodo = '';
@@ -43,8 +52,12 @@ let todoList = Vue.extend({
     `<ul class="list-group list-group-flush">
       <li class="list-group-item" v-for="(item, index) in thingTodos">
         <input type="checkbox" v-model="item.complete" @click="done(item,index)"></input>
-        <span :class="{ checkbox: item.complete }">{{ item.content }}</span>     
-        <input type="button" value="刪除" @click="removeThing(item, index)">
+        <div>
+          <p :class="{ checkbox: item.complete }">{{ item.content }}</p>
+          <div>{{ item.dateTime.Year }}/{{ item.dateTime.Month }}/{{ item.dateTime.Date}}
+             {{ item.dateTime.Hour }}:{{ item.dateTime.Minute }}<input type="button"
+             value="刪除" @click="removeThing(item, index)"></div>
+        </div>  
       </li>
     </ul>`,
   props: {
@@ -108,6 +121,19 @@ let wantTodo = Vue.extend({
     },
     undoneState(object){
       this.todos.push(object);
+      this.todos.sort((a,b) => {
+        if (a.dateTime.Year - b.dateTime.Year < 0){
+          return a.dateTime.Year - b.dateTime.Year;
+        }else if (a.dateTime.Month - b.dateTime.Month < 0){
+          return a.dateTime.Month - b.dateTime.Month;
+        }else if (a.dateTime.Date - b.dateTime.Date < 0){
+          return a.dateTime.Date - b.dateTime.Date;
+        }else if (a.dateTime.Hour - b.dateTime.Hour < 0){
+          return a.dateTime.Hour - b.dateTime.Hour;
+        }else {
+          return a.dateTime.Minute - b.dateTime.Minute;
+        }
+      });
       localStorage.setItem('todoList', JSON.stringify(this.todos));
     }
   }
@@ -132,6 +158,19 @@ let doneTodo = Vue.extend({
   methods: {
     doneState(object){
       this.todos.push(object);
+      this.todos.sort((a,b) => {
+        if (a.dateTime.Year - b.dateTime.Year < 0){
+          return a.dateTime.Year - b.dateTime.Year;
+        }else if (a.dateTime.Month - b.dateTime.Month < 0){
+          return a.dateTime.Month - b.dateTime.Month;
+        }else if (a.dateTime.Date - b.dateTime.Date < 0){
+          return a.dateTime.Date - b.dateTime.Date;
+        }else if (a.dateTime.Hour - b.dateTime.Hour < 0){
+          return a.dateTime.Hour - b.dateTime.Hour;
+        }else {
+          return a.dateTime.Minute - b.dateTime.Minute;
+        }
+      });
       localStorage.setItem('doneList', JSON.stringify(this.todos));
     }
   }
@@ -143,7 +182,6 @@ let app = new Vue({
     todoTitle: '代辦事項',
     doneTitle: '已完成',
     currentView: 'wantTodo',
-    date: new Date()
   },
   components: {
     wantTodo,

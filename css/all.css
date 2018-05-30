@@ -103,20 +103,32 @@ h1{
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-.list-group-item span{
-  font-size: 20px;
-  width: calc(100% - 18px - 48px);
+  padding: 12px 0;
   margin: 0 10px;
-  word-wrap: break-word;
+}
+.list-group-item > div{
+  font-size: 20px;
+  width: calc(100% - 18px);
+  margin: 0 10px;
+  display: flex;
+  flex-direction: column;
+}
+.list-group-item div p{
+  margin-bottom: 5px;  
+}
+.list-group-item > div div{
+  text-align: right;
+  font-size: 12px;
 }
 input[type="checkbox"]{
   min-width: 18px;
   height: 18px;
 }
-input[value="刪除"]{
+.list-group-item > div div input[value="刪除"]{
   width: 48px;
   height: 22px;
+  font-size: 16px;
+  margin-left: 5px;
 }
 
 
