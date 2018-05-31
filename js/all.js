@@ -1,4 +1,4 @@
-// 全域變數設定
+// 設置 Event bus
 let EventBus = new Vue();
 Object.defineProperties(Vue.prototype, {
   $bus: {
@@ -8,6 +8,7 @@ Object.defineProperties(Vue.prototype, {
   }
 })
 
+// 組件 - 輸入框
 let newInput = Vue.extend({
   template: 
     `<div class="input-group mb-3">
@@ -17,7 +18,6 @@ let newInput = Vue.extend({
       <button class="btn btn-outline-secondary" type="button"
         @click="addThing(newInputTodo)">送出</button>
     </div>`,
-
   props: {
     newAdd: null
   },
@@ -29,17 +29,10 @@ let newInput = Vue.extend({
   },
   methods: {
     addThing(content){
-      const date = new Date();
       const thing = {
         content: content,
         complete: false,
-        dateTime: {
-          Year: date.getFullYear(),
-          Month: date.getMonth() + 1,
-          Date: date.getDate(),
-          Hour: (date.getHours() < 10 ? '0' : '') + date.getHours(),
-          Minute: (date.getMinutes() < 10 ? '0' : '') + date.getMinutes()
-        }
+        dateTime: new Date().getTime()
       }
       this.$bus.$emit('updatedAdd', thing);
       this.newInputTodo = '';
@@ -47,6 +40,7 @@ let newInput = Vue.extend({
   }
 });
 
+// 組件 - 事項列表
 let todoList = Vue.extend({
   template: 
     `<ul class="list-group list-group-flush">
@@ -54,9 +48,10 @@ let todoList = Vue.extend({
         <input type="checkbox" v-model="item.complete" @click="done(item,index)"></input>
         <div>
           <p :class="{ checkbox: item.complete }">{{ item.content }}</p>
-          <div>{{ item.dateTime.Year }}/{{ item.dateTime.Month }}/{{ item.dateTime.Date}}
-             {{ item.dateTime.Hour }}:{{ item.dateTime.Minute }}<input type="button"
-             value="刪除" @click="removeThing(item, index)"></div>
+          <div>
+            {{ timeFormat(item.dateTime) }}
+            <input type="button" value="刪除" @click="removeThing(item, index)">
+          </div>
         </div>  
       </li>
     </ul>`,
@@ -69,6 +64,13 @@ let todoList = Vue.extend({
     }
   },
   methods:{
+    timeFormat(time){
+      const date = new Date(time);
+      const Hour = (date.getHours() < 10 ? '0' : '') + date.getHours();
+      const Minute = (date.getMinutes() < 10 ? '0' : '') + date.getMinutes();
+      return date.getFullYear() + '/' + (date.getMonth() + 1) + '/' +
+      date.getDate() + ' ' + Hour + ':' + Minute;
+    },
     removeThing(object, index){
       if (object.complete == false){
         this.thingTodos.splice(index, 1);
@@ -94,6 +96,7 @@ let todoList = Vue.extend({
   }
 });
 
+// 組件 - 待辦事項
 let wantTodo = Vue.extend({
   template:
     `<div class="todolist">
@@ -117,28 +120,22 @@ let wantTodo = Vue.extend({
   methods: {
     addTodo(thing){
       this.todos.push(thing);
+      this.todos.sort((a, b) => {
+        return a.dateTime - b.dateTime;
+      });
       localStorage.setItem('todoList', JSON.stringify(this.todos));
     },
     undoneState(object){
       this.todos.push(object);
-      this.todos.sort((a,b) => {
-        if (a.dateTime.Year - b.dateTime.Year < 0){
-          return a.dateTime.Year - b.dateTime.Year;
-        }else if (a.dateTime.Month - b.dateTime.Month < 0){
-          return a.dateTime.Month - b.dateTime.Month;
-        }else if (a.dateTime.Date - b.dateTime.Date < 0){
-          return a.dateTime.Date - b.dateTime.Date;
-        }else if (a.dateTime.Hour - b.dateTime.Hour < 0){
-          return a.dateTime.Hour - b.dateTime.Hour;
-        }else {
-          return a.dateTime.Minute - b.dateTime.Minute;
-        }
+      this.todos.sort((a, b) => {
+        return a.dateTime - b.dateTime;
       });
       localStorage.setItem('todoList', JSON.stringify(this.todos));
     }
   }
 });
 
+// 組件 - 已辦事項
 let doneTodo = Vue.extend({
   template: 
     `<div class="todolist">
@@ -158,18 +155,8 @@ let doneTodo = Vue.extend({
   methods: {
     doneState(object){
       this.todos.push(object);
-      this.todos.sort((a,b) => {
-        if (a.dateTime.Year - b.dateTime.Year < 0){
-          return a.dateTime.Year - b.dateTime.Year;
-        }else if (a.dateTime.Month - b.dateTime.Month < 0){
-          return a.dateTime.Month - b.dateTime.Month;
-        }else if (a.dateTime.Date - b.dateTime.Date < 0){
-          return a.dateTime.Date - b.dateTime.Date;
-        }else if (a.dateTime.Hour - b.dateTime.Hour < 0){
-          return a.dateTime.Hour - b.dateTime.Hour;
-        }else {
-          return a.dateTime.Minute - b.dateTime.Minute;
-        }
+      this.todos.sort((a, b) => {
+        return a.dateTime - b.dateTime;
       });
       localStorage.setItem('doneList', JSON.stringify(this.todos));
     }
